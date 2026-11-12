@@ -4,6 +4,7 @@ import { ModifyRelationOptions } from '@ptc-org/nestjs-query-core'
 
 import { AuthorizationContext, OperationGroup } from '../auth'
 import { AuthorizerContext } from '../interceptors'
+import { AuthorizerFilterPipe, AuthorizerFilterRequest } from '../pipes/authorizer-filter.pipe'
 
 type PartialAuthorizationContext = Partial<AuthorizationContext> & Pick<AuthorizationContext, 'operationGroup' | 'many'>
 
@@ -53,10 +54,28 @@ function getAuthorizationContext(
   }
 }
 
+/**
+ * With a `dto` the decorator leaves the choice of the authorizer to `AuthorizerFilterPipe`, which follows the
+ * `authorizerScope` of `NestjsQueryGraphQLModule.forRoot`. Without one it asks the authorizer on the context, as before.
+ */
+function requestFilter<DTO>(
+  kind: AuthorizerFilterRequest['kind'],
+  authorizationContext: AuthorizationContext,
+  relationName?: string
+): ParameterDecorator {
+  return createParamDecorator(
+    (data: unknown, executionContext: ExecutionContext) =>
+      new AuthorizerFilterRequest(kind, getContext<AuthorizerContext<DTO>>(executionContext), authorizationContext, relationName)
+  )(AuthorizerFilterPipe)
+}
+
 export function AuthorizerFilter<DTO>(partialAuthContext?: PartialAuthorizationContext): ParameterDecorator {
   // eslint-disable-next-line @typescript-eslint/ban-types
   return (target: Object, propertyKey: string | symbol, parameterIndex: number) => {
     const authorizationContext = getAuthorizationContext(propertyKey, partialAuthContext)
+    if (partialAuthContext?.dto) {
+      return requestFilter<DTO>('filter', authorizationContext)(target, propertyKey, parameterIndex)
+    }
     return createParamDecorator((data: unknown, executionContext: ExecutionContext) =>
       getAuthorizerFilter(getContext<AuthorizerContext<DTO>>(executionContext), authorizationContext)
     )()(target, propertyKey, parameterIndex)
@@ -70,6 +89,9 @@ export function RelationAuthorizerFilter<DTO>(
   // eslint-disable-next-line @typescript-eslint/ban-types
   return (target: Object, propertyKey: string | symbol, parameterIndex: number) => {
     const authorizationContext = getAuthorizationContext(propertyKey, partialAuthContext)
+    if (partialAuthContext?.dto) {
+      return requestFilter<DTO>('relation', authorizationContext, relationName)(target, propertyKey, parameterIndex)
+    }
     return createParamDecorator((data: unknown, executionContext: ExecutionContext) =>
       getRelationAuthFilter(getContext<AuthorizerContext<DTO>>(executionContext), relationName, authorizationContext)
     )()(target, propertyKey, parameterIndex)
@@ -83,6 +105,9 @@ export function ModifyRelationAuthorizerFilter<DTO>(
   // eslint-disable-next-line @typescript-eslint/ban-types
   return (target: Object, propertyKey: string | symbol, parameterIndex: number) => {
     const authorizationContext = getAuthorizationContext(propertyKey, partialAuthContext)
+    if (partialAuthContext?.dto) {
+      return requestFilter<DTO>('modifyRelation', authorizationContext, relationName)(target, propertyKey, parameterIndex)
+    }
     return createParamDecorator(
       async (data: unknown, executionContext: ExecutionContext): Promise<ModifyRelationOptions<unknown, unknown>> => {
         const context = getContext<AuthorizerContext<DTO>>(executionContext)

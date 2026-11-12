@@ -67,7 +67,8 @@ export const Aggregateable =
         @AggregateQueryParam() query: AggregateQuery<DTO>,
         @AuthorizerFilter({
           operationGroup: OperationGroup.AGGREGATE,
-          many: true
+          many: true,
+          dto: DTOClass
         })
         authFilter?: Filter<DTO>
       ): Promise<AggregateResponse<DTO>[]> {
