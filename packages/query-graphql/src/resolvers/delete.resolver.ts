@@ -127,7 +127,8 @@ export const Deletable =
         @MutationHookArgs() input: DO,
         @AuthorizerFilter({
           operationGroup: OperationGroup.DELETE,
-          many: false
+          many: false,
+          dto: DTOClass
         })
         authorizeFilter?: Filter<DTO>
       ): Promise<Partial<DTO>> {
@@ -152,7 +153,8 @@ export const Deletable =
         @MutationHookArgs() input: DM,
         @AuthorizerFilter({
           operationGroup: OperationGroup.DELETE,
-          many: true
+          many: true,
+          dto: DTOClass
         })
         authorizeFilter?: Filter<DTO>
       ): Promise<DeleteManyResponse> {
@@ -192,7 +194,7 @@ export const Deletable =
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
       deletedOneSubscription(
         @Args() input?: DOSA,
-        @AuthorizerFilter({ operationGroup: OperationGroup.DELETE, many: false })
+        @AuthorizerFilter({ operationGroup: OperationGroup.DELETE, many: false, dto: DTOClass })
         authorizeFilter?: Filter<DTO>
       ): AsyncIterator<DeletedEvent<DeleteOneResponse>> {
         if (!enableOneSubscriptions || !this.pubSub) {
@@ -207,7 +209,7 @@ export const Deletable =
         interceptors: [AuthorizerInterceptor(DTOClass)]
       })
       deletedManySubscription(
-        @AuthorizerFilter({ operationGroup: OperationGroup.DELETE, many: true })
+        @AuthorizerFilter({ operationGroup: OperationGroup.DELETE, many: true, dto: DTOClass })
         authorizeFilter?: Filter<DTO>
       ): AsyncIterator<DeletedEvent<DeleteManyResponse>> {
         if (!enableManySubscriptions || !this.pubSub) {

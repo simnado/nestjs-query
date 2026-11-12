@@ -51,7 +51,9 @@ const ReadOneRelationMixin =
         @Context() context: ExecutionContext,
         @RelationAuthorizerFilter(baseNameLower, {
           operationGroup: OperationGroup.READ,
-          many: false
+          many: false,
+          dto: DTOClass,
+          relationDTO
         })
         authFilter?: Filter<Relation>,
         @GraphQLResultInfo(DTOClass)
@@ -127,7 +129,9 @@ const ReadManyRelationMixin =
         @Context() context: ExecutionContext,
         @RelationAuthorizerFilter(baseNameLower, {
           operationGroup: OperationGroup.READ,
-          many: true
+          many: true,
+          dto: DTOClass,
+          relationDTO
         })
         relationFilter?: Filter<Relation>,
         @GraphQLResultInfo(DTOClass)

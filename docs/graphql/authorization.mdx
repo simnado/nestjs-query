@@ -299,6 +299,37 @@ export class SubTaskDTO {
 }
 ```
 
+## Authorizer Scope[​](#authorizer-scope 'Direct link to Authorizer Scope')
+
+By default the generated resolvers ask the authorizer that the `AuthorizerInterceptor` of the root field put on the
+GraphQL context. All fields of an operation share that context, so
+
+- every relation below a root field, at any depth, is authorized by `authorizeRelation` of the **root field's**
+  authorizer. For a relation that is no relation of the root DTO it answers with an empty filter unless the
+  authorizer knows the relation name.
+- root fields of one operation that belong to different DTOs can end up with each other's authorizer.
+
+Set `authorizerScope: 'dto'` in `NestjsQueryGraphQLModule.forRoot` to let every generated resolver ask the authorizer
+of its own DTO instead. A relation is then authorized by the authorizer of the DTO that declares it, at any depth:
+its `authorizeRelation`, the `auth` option of the relation, or the authorizer of the related DTO, as described in
+[Relation Filtering](#relation-filtering).
+
+```ts app.module.ts
+import { NestjsQueryGraphQLModule } from '@ptc-org/nestjs-query-graphql'
+
+@Module({
+  imports: [NestjsQueryGraphQLModule.forRoot({ authorizerScope: 'dto' })]
+})
+export class AppModule {}
+```
+
+With `todoLists { todoItems { subTasks { title } } }` the `subTasks` relation is authorized by the `TodoItemDTO`
+authorizer instead of the `TodoListDTO` authorizer, and the `SubTaskDTO` authorizer applies unless one of them
+narrows it.
+
+The generated resolvers pass the DTO as `dto` (and the related DTO as `relationDTO`) in the `AuthorizationContext`.
+Custom resolvers that use `@AuthorizerFilter` without a `dto` keep using the authorizer on the context.
+
 ## Using Authorizers In Your Resolver[​](#using-authorizers-in-your-resolver 'Direct link to Using Authorizers In Your Resolver')
 
 The easiest way to leverage `Authorizers` in a custom resolver is to use the `AuthorizerInterceptor` and `AuthorizerFilter` param decorator.

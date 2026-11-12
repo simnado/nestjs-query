@@ -138,7 +138,8 @@ export const Creatable =
         @MutationHookArgs() input: CO,
         @AuthorizerFilter({
           operationGroup: OperationGroup.CREATE,
-          many: false
+          many: false,
+          dto: DTOClass
         })
         authorizeFilter?: Filter<DTO>
       ): Promise<DTO> {
@@ -163,7 +164,8 @@ export const Creatable =
         @MutationHookArgs() input: CM,
         @AuthorizerFilter({
           operationGroup: OperationGroup.CREATE,
-          many: true
+          many: true,
+          dto: DTOClass
         })
         authorizeFilter?: Filter<DTO>
       ): Promise<DTO[]> {
@@ -188,7 +190,7 @@ export const Creatable =
       })
       createdSubscription(
         @Args() input?: SA,
-        @AuthorizerFilter({ operationGroup: OperationGroup.CREATE, many: false })
+        @AuthorizerFilter({ operationGroup: OperationGroup.CREATE, many: false, dto: DTOClass })
         authorizeFilter?: Filter<DTO>
       ): AsyncIterator<CreatedEvent<DTO>> {
         if (!this.pubSub || !(enableManySubscriptions || enableOneSubscriptions)) {

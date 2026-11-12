@@ -1,6 +1,7 @@
 import { DynamicModule, ForwardReference, Global, Module, Provider } from '@nestjs/common'
 import { Assembler, Class, NestjsQueryCoreModule } from '@ptc-org/nestjs-query-core'
 
+import { AuthorizerScope, authorizerScopeToken } from './auth'
 import { DataLoaderOptions, dataLoaderOptionsToken } from './pipes/inject-data-loader-config.pipe'
 import { AutoResolverOpts, createAuthorizerProviders, createHookProviders, createResolvers } from './providers'
 import { ReadResolverOpts } from './resolvers'
@@ -16,6 +17,8 @@ interface DTOModuleOpts<DTO> {
 export interface NestjsQueryGraphqlModuleRootOpts {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   dataLoader?: DataLoaderOptions
+  /** Which authorizer the generated resolvers ask for their filters, see `AuthorizerScope`. Defaults to `context`. */
+  authorizerScope?: AuthorizerScope
 }
 
 export interface NestjsQueryGraphqlModuleFeatureOpts {
@@ -34,7 +37,10 @@ export interface NestjsQueryGraphqlModuleFeatureOpts {
 @Module({})
 export class NestjsQueryGraphQLCoreModule {
   public static forRoot(opts: NestjsQueryGraphqlModuleRootOpts): DynamicModule {
-    const providers = [{ provide: dataLoaderOptionsToken, useValue: opts.dataLoader ?? {} }]
+    const providers = [
+      { provide: dataLoaderOptionsToken, useValue: opts.dataLoader ?? {} },
+      { provide: authorizerScopeToken, useValue: opts.authorizerScope ?? 'context' }
+    ]
 
     return {
       module: NestjsQueryGraphQLCoreModule,

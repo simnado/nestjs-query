@@ -157,7 +157,8 @@ export const Exportable =
         @Args() args: EF,
         @AuthorizerFilter({
           operationGroup: OperationGroup.EXPORT,
-          many: true
+          many: true,
+          dto: DTOClass
         })
         authorizeFilter?: Filter<DTO>,
         @GraphQLResultInfo(DTOClass)

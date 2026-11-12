@@ -138,7 +138,8 @@ export const Updatable =
         @MutationHookArgs() input: UO,
         @AuthorizerFilter({
           operationGroup: OperationGroup.UPDATE,
-          many: false
+          many: false,
+          dto: DTOClass
         })
         authorizeFilter?: Filter<DTO>
       ): Promise<DTO> {
@@ -163,7 +164,8 @@ export const Updatable =
         @MutationHookArgs() input: UM,
         @AuthorizerFilter({
           operationGroup: OperationGroup.UPDATE,
-          many: true
+          many: true,
+          dto: DTOClass
         })
         authorizeFilter?: Filter<DTO>
       ): Promise<UpdateManyResponse> {
@@ -197,7 +199,7 @@ export const Updatable =
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
       updatedOneSubscription(
         @Args() input?: UOSA,
-        @AuthorizerFilter({ operationGroup: OperationGroup.UPDATE, many: false })
+        @AuthorizerFilter({ operationGroup: OperationGroup.UPDATE, many: false, dto: DTOClass })
         authorizeFilter?: Filter<DTO>
       ): AsyncIterator<UpdatedEvent<DTO>> {
         if (!enableOneSubscriptions || !this.pubSub) {
@@ -212,7 +214,7 @@ export const Updatable =
         interceptors: [AuthorizerInterceptor(DTOClass)]
       })
       updatedManySubscription(
-        @AuthorizerFilter({ operationGroup: OperationGroup.UPDATE, many: true })
+        @AuthorizerFilter({ operationGroup: OperationGroup.UPDATE, many: true, dto: DTOClass })
         authorizeFilter?: Filter<DTO>
       ): AsyncIterator<UpdatedEvent<DeleteManyResponse>> {
         if (!enableManySubscriptions || !this.pubSub) {

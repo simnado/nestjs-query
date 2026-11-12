@@ -3,7 +3,8 @@ import { ROUTE_ARGS_METADATA } from '@nestjs/common/constants'
 import { instance, mock, when } from 'ts-mockito'
 
 import { OperationGroup } from '../../src/auth'
-import { AuthorizerFilter } from '../../src/decorators'
+import { AuthorizerFilter, RelationAuthorizerFilter } from '../../src/decorators'
+import { AuthorizerFilterPipe, AuthorizerFilterRequest } from '../../src/pipes/authorizer-filter.pipe'
 
 describe('AuthorizerFilter', () => {
   it.each([undefined, false, true])('infers readonly for EXPORT and respects override %s', async (readonly) => {
@@ -34,5 +35,49 @@ describe('AuthorizerFilter', () => {
       many: true,
       readonly: readonly ?? true
     })
+  })
+
+  it('leaves the choice of the authorizer to the AuthorizerFilterPipe when it knows the DTO', () => {
+    class ItemDto {}
+    class SubTaskDto {}
+    class Resolver {
+      findSubTasks(
+        @RelationAuthorizerFilter('subTasks', {
+          operationGroup: OperationGroup.READ,
+          many: true,
+          dto: ItemDto,
+          relationDTO: SubTaskDto
+        })
+        filter: unknown
+      ): unknown {
+        return filter
+      }
+    }
+
+    const context = { authorizer: { authorize: jest.fn(), authorizeRelation: jest.fn() } }
+    const executionContext = mock<ExecutionContext>()
+    when(executionContext.getArgs()).thenReturn([undefined, {}, context, undefined])
+    const metadata = Reflect.getMetadata(ROUTE_ARGS_METADATA, Resolver, 'findSubTasks') as Record<
+      string,
+      { factory: (data: unknown, ctx: ExecutionContext) => unknown; pipes: unknown[] }
+    >
+    const [param] = Object.values(metadata)
+
+    expect(param.pipes).toEqual([AuthorizerFilterPipe])
+    expect(param.factory(undefined, instance(executionContext))).toEqual(
+      new AuthorizerFilterRequest(
+        'relation',
+        context,
+        {
+          operationName: 'findSubTasks',
+          operationGroup: OperationGroup.READ,
+          many: true,
+          readonly: true,
+          dto: ItemDto,
+          relationDTO: SubTaskDto
+        },
+        'subTasks'
+      )
+    )
   })
 })

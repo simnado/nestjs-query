@@ -49,7 +49,9 @@ const RemoveOneRelationMixin =
         @Args() setArgs: SetArgs,
         @ModifyRelationAuthorizerFilter(baseNameLower, {
           operationGroup: OperationGroup.UPDATE,
-          many: false
+          many: false,
+          dto: DTOClass,
+          relationDTO
         })
         modifyRelationsFilter?: ModifyRelationOptions<DTO, Relation>
       ): Promise<DTO> {
@@ -97,7 +99,9 @@ const RemoveManyRelationsMixin =
         @Args() addArgs: AddArgs,
         @ModifyRelationAuthorizerFilter(pluralBaseNameLower, {
           operationGroup: OperationGroup.UPDATE,
-          many: true
+          many: true,
+          dto: DTOClass,
+          relationDTO
         })
         modifyRelationsFilter?: ModifyRelationOptions<DTO, Relation>
       ): Promise<DTO> {

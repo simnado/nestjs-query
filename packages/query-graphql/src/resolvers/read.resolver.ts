@@ -90,7 +90,8 @@ export const Readable =
         @HookArgs() input: FO,
         @AuthorizerFilter({
           operationGroup: OperationGroup.READ,
-          many: false
+          many: false,
+          dto: DTOClass
         })
         authorizeFilter?: Filter<DTO>,
         @GraphQLResultInfo(DTOClass)
@@ -115,7 +116,8 @@ export const Readable =
         @HookArgs() query: QA,
         @AuthorizerFilter({
           operationGroup: OperationGroup.READ,
-          many: true
+          many: true,
+          dto: DTOClass
         })
         authorizeFilter?: Filter<DTO>,
         @GraphQLResultInfo(DTOClass)

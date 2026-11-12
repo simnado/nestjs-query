@@ -65,7 +65,9 @@ const AggregateRelationMixin =
         @Context() context: ExecutionContext,
         @RelationAuthorizerFilter(baseNameLower, {
           operationGroup: OperationGroup.AGGREGATE,
-          many: true
+          many: true,
+          dto: DTOClass,
+          relationDTO
         })
         relationFilter?: Filter<Relation>,
         @InjectDataLoaderConfig()
